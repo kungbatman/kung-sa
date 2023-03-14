@@ -1,0 +1,2 @@
+#启动Nacos单机版
+startup.cmd -m standalone

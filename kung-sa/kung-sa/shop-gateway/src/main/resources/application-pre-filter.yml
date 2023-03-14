@@ -1,0 +1,53 @@
+server:
+  port: 10001
+spring:
+  application:
+    name: server-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowCredentials: true
+            allowedHeaders: "*"
+
+      #配置后会与路由冲突，route中配置了url规则也覆盖不了默认的路由策略
+      #直接false或者提升路由order级别为-1
+      discovery:
+        locator:
+          enabled: false #默认false
+          route-id-prefix: gateway- #生成流控规则API名称的前缀
+
+      routes:
+        - id: user-gateway
+          uri: http://localhost:8060
+          order: 1
+          predicates:
+            - Path=/server-user/**
+            - RemoteAddr=192.168.0.1/24
+            - Method=GET
+          #            - Name=kung
+          filters:
+            - StripPrefix=1
+        #            - AddRequestHeader=IP,localhost
+        #            - AddRequestParameter=name,kung
+        #            - SetStatus=1001
+        #            - Grayscale=true
+
+        - id: product-gateway
+          uri: http://localhost:8070
+          order: 1
+          predicates:
+            - Path=/server-product/**
+          filters:
+            - StripPrefix=1
+
+        - id: order-gateway
+          uri: http://localhost:8080
+          order: 1
+          predicates:
+            - Path=/server-order/**
+          filters:
+            - StripPrefix=1
